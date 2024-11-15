@@ -31,7 +31,7 @@ collectstatic:
 	@$(COMPOSE) run --rm app python manage.py collectstatic --no-input
 
 createsuperuser:
-	@$(COMPOSE) run --rm app python manage.py creates
+	@$(COMPOSE) run --rm app python manage.py createsuperuser
 
 poetry_add:
 	@$(COMPOSE) run --rm app poetry add ${cmd}
