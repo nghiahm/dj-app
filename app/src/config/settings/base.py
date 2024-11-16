@@ -184,4 +184,8 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "DjApp description",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+    },
 }
