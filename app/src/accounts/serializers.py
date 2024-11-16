@@ -1,4 +1,5 @@
 from django.core import exceptions
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, Serializer
@@ -42,3 +43,24 @@ class LogoutSerializer(Serializer):
             raise ValidationError({"refresh": e})
 
         return attrs
+
+
+class UserDetailsSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("email", "first_name", "last_name", "is_active")
+        read_only_fields = ("email",)
+
+
+class UserDeleteSerializer(Serializer):
+    current_password = serializers.CharField(style={"input_type": "password"})
+
+    def validate(self, attrs):
+        request = self.context["request"]
+        user = request.user
+        current_password = attrs["current_password"]
+
+        if check_password(current_password, user.password):
+            return attrs
+        else:
+            raise ValidationError({"current_password": "Invalid password."})
