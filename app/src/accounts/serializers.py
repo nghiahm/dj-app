@@ -1,4 +1,5 @@
 from django.core import exceptions
+from django.db import IntegrityError
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
@@ -6,7 +7,7 @@ from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from accounts.models import User
+from accounts.models import User, Merchant
 
 
 class UserCreateSerializer(ModelSerializer):
@@ -64,3 +65,26 @@ class UserDeleteSerializer(Serializer):
             return attrs
         else:
             raise ValidationError({"current_password": "Invalid password."})
+
+
+class UserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "email", "first_name", "last_name", "is_active")
+
+
+class MerchantSerializer(ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Merchant
+        fields = "__all__"
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        user = request.user
+        try:
+            merchant = Merchant.objects.create(user=user, **validated_data)
+        except IntegrityError:
+            raise ValidationError("You can only create one merchant per user.")
+        return merchant

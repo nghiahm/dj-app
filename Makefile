@@ -41,3 +41,6 @@ poetry_add:
 
 schema:
 	@$(COMPOSE) run --rm app python manage.py spectacular --color --file schema.yml
+
+run_app:
+	@$(COMPOSE) run --rm app ${cmd}

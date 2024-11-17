@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from accounts.views import UserCreateView, LogoutView, UserDetailsView, UserDeleteView
+from accounts.views import UserCreateView, LogoutView, UserDetailsView, UserDeleteView, MerchantViewSet
 
 urlpatterns = [
     path("signup/", UserCreateView.as_view(), name="signup"),
@@ -9,4 +9,11 @@ urlpatterns = [
     path("token/blacklist/", LogoutView.as_view(), name="logout"),
     path("details/", UserDetailsView.as_view(), name="user-details"),
     path("delete/", UserDeleteView.as_view(), name="delete-user"),
+    path(
+        "merchant/",
+        MerchantViewSet.as_view(
+            {"post": "create", "get": "retrieve", "put": "partial_update", "patch": "update", "delete": "destroy"}
+        ),
+        name="merchant-api",
+    ),
 ]

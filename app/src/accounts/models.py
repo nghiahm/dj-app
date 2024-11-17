@@ -18,3 +18,11 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class Merchant(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"{self.user} - merchant"
