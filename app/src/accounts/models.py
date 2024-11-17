@@ -26,3 +26,23 @@ class Merchant(models.Model):
 
     def __str__(self):
         return f"{self.user} - merchant"
+
+
+class Product(models.Model):
+    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.merchant} - product"
+
+
+class Service(models.Model):
+    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.merchant} - service"

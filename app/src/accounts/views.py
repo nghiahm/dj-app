@@ -10,8 +10,11 @@ from accounts.serializers import (
     UserDetailsSerializer,
     UserDeleteSerializer,
     MerchantSerializer,
+    ProductSerializer,
+    ServiceSerializer,
 )
-from accounts.models import Merchant
+from accounts.models import Merchant, Product, Service
+from accounts.permissions import IsMerchantUser
 
 
 class UserCreateView(GenericAPIView):
@@ -66,6 +69,36 @@ class MerchantViewSet(ModelViewSet):
         self.queryset = self.get_queryset()
         obj = get_object_or_404(self.queryset, user=self.request.user)
         return obj
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+
+class ProductViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated, IsMerchantUser)
+    serializer_class = ProductSerializer
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        return Product.objects.filter(merchant=self.request.user.merchant)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+
+class ServiceViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated, IsMerchantUser)
+    serializer_class = ServiceSerializer
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        return Service.objects.filter(merchant=self.request.user.merchant)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

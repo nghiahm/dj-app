@@ -7,7 +7,7 @@ from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from accounts.models import User, Merchant
+from accounts.models import User, Merchant, Product, Service
 
 
 class UserCreateSerializer(ModelSerializer):
@@ -88,3 +88,31 @@ class MerchantSerializer(ModelSerializer):
         except IntegrityError:
             raise ValidationError("You can only create one merchant per user.")
         return merchant
+
+
+class ProductSerializer(ModelSerializer):
+    merchant = MerchantSerializer(read_only=True)
+
+    class Meta:
+        model = Product
+        fields = "__all__"
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        merchant = request.user.merchant
+        product = Product.objects.create(merchant=merchant, **validated_data)
+        return product
+
+
+class ServiceSerializer(ModelSerializer):
+    merchant = MerchantSerializer(read_only=True)
+
+    class Meta:
+        model = Service
+        fields = "__all__"
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        merchant = request.user.merchant
+        product = Service.objects.create(merchant=merchant, **validated_data)
+        return product

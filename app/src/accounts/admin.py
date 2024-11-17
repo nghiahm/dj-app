@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from accounts.models import User, Merchant
+from accounts.models import User, Merchant, Product, Service
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -21,3 +21,17 @@ class MerchantAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Merchant, MerchantAdmin)
+
+
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ("id", "merchant", "name", "created_at", "updated_at")
+
+
+admin.site.register(Product, ProductAdmin)
+
+
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ("id", "merchant", "name", "created_at", "updated_at")
+
+
+admin.site.register(Service, ServiceAdmin)

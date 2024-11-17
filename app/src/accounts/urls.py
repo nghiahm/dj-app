@@ -1,6 +1,20 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from accounts.views import UserCreateView, LogoutView, UserDetailsView, UserDeleteView, MerchantViewSet
+from rest_framework.routers import DefaultRouter
+from accounts.views import (
+    UserCreateView,
+    LogoutView,
+    UserDetailsView,
+    UserDeleteView,
+    MerchantViewSet,
+    ProductViewSet,
+    ServiceViewSet,
+)
+
+
+router = DefaultRouter()
+router.register("products", ProductViewSet, basename="products")
+router.register("services", ServiceViewSet, basename="services")
 
 urlpatterns = [
     path("signup/", UserCreateView.as_view(), name="signup"),
@@ -10,10 +24,10 @@ urlpatterns = [
     path("details/", UserDetailsView.as_view(), name="user-details"),
     path("delete/", UserDeleteView.as_view(), name="delete-user"),
     path(
-        "merchant/",
+        "merchants/",
         MerchantViewSet.as_view(
             {"post": "create", "get": "retrieve", "put": "partial_update", "patch": "update", "delete": "destroy"}
         ),
         name="merchant-api",
     ),
-]
+] + router.urls
