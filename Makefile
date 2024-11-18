@@ -39,8 +39,11 @@ startapp:
 poetry_add:
 	@$(COMPOSE) run --rm app poetry add ${cmd}
 
-schema:
-	@$(COMPOSE) run --rm app python manage.py spectacular --color --file schema.yml
-
 run_app:
 	@$(COMPOSE) run --rm app ${cmd}
+
+app_schema:
+	@$(COMPOSE) run --rm app python manage.py spectacular --color --file schema.yml
+
+app_test:
+	@$(COMPOSE) run --rm app pytest -s ${path}
