@@ -190,12 +190,8 @@ class ServiceSerializer(serializers.ModelSerializer):
 
 
 class PromotionSerializer(serializers.ModelSerializer):
-    product_id = serializers.PrimaryKeyRelatedField(
-        queryset=Product.objects.all(), source="product", write_only=True, required=False
-    )
-    service_id = serializers.PrimaryKeyRelatedField(
-        queryset=Service.objects.all(), source="service", write_only=True, required=False
-    )
+    product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True, required=False)
+    service_id = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all(), write_only=True, required=False)
     product = ProductSerializer(read_only=True)
     service = ServiceSerializer(read_only=True)
     category_ids = serializers.PrimaryKeyRelatedField(
@@ -216,9 +212,55 @@ class PromotionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, attrs):
-        if not attrs.get("product") and not attrs.get("service"):
+        if not attrs.get("product_id") and not attrs.get("service_id"):
             raise ValidationError("A promotion must has a product or a service.")
         return attrs
+
+    def create(self, validated_data):
+        product_id = validated_data.pop("product_id", None)
+        service_id = validated_data.pop("service_id", None)
+
+        category_ids = validated_data.pop("category_ids", [])
+        hashtag_ids = validated_data.pop("hashtag_ids", [])
+        keyword_ids = validated_data.pop("keyword_ids", [])
+
+        promotion = Promotion.objects.create(
+            product=Product.objects.get(pk=product_id.pk) if product_id else None,
+            service=Service.objects.get(pk=service_id.pk) if service_id else None,
+            **validated_data,
+        )
+
+        promotion.categories.set(category_ids)
+        promotion.hashtags.set(hashtag_ids)
+        promotion.keywords.set(keyword_ids)
+
+        return promotion
+
+    def update(self, instance, validated_data):
+        product_id = validated_data.pop("product_id", None)
+        service_id = validated_data.pop("service_id", None)
+
+        if product_id:
+            instance.product = Product.objects.get(pk=product_id.pk)
+        if service_id:
+            instance.service = Service.objects.get(pk=service_id.pk)
+
+        category_ids = validated_data.pop("category_ids", [])
+        hashtag_ids = validated_data.pop("hashtag_ids", [])
+        keyword_ids = validated_data.pop("keyword_ids", [])
+
+        instance = super().update(instance, validated_data)
+
+        instance.categories.set(category_ids)
+        instance.hashtags.set(hashtag_ids)
+        instance.keywords.set(keyword_ids)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        return instance
 
 
 class MerchantSerializer(ModelSerializer):

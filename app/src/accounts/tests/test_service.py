@@ -1,5 +1,12 @@
 import pytest
-from accounts.factory import UserFactory, MerchantFactory, ServiceFactory
+from accounts.factory import (
+    UserFactory,
+    MerchantFactory,
+    ServiceFactory,
+    CategoryFactory,
+    HashtagFactory,
+    KeywordFactory,
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -7,7 +14,15 @@ from rest_framework_simplejwt.tokens import RefreshToken
 def test_create_service(api_client):
     user = UserFactory()
     MerchantFactory(user=user)
-    payload = dict(name="servicename")
+    categories = CategoryFactory.create_batch(3)
+    hashtags = HashtagFactory.create_batch(3)
+    keywords = KeywordFactory.create_batch(3)
+    payload = dict(
+        name="servicename",
+        category_ids=[category.pk for category in categories],
+        hashtag_ids=[hashtag.pk for hashtag in hashtags],
+        keyword_ids=[keyword.pk for keyword in keywords],
+    )
     refresh = RefreshToken.for_user(user)
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(refresh.access_token)}")
     response = api_client.post("/api/v1/accounts/services/", payload)
@@ -15,9 +30,9 @@ def test_create_service(api_client):
 
 
 @pytest.mark.django_db
-def test_create_service_error_no_merchant(api_client):
+def test_create_service_error_no_merchant_existt(api_client):
     user = UserFactory()
-    payload = dict(name="servicename")
+    payload = {}
     refresh = RefreshToken.for_user(user)
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(refresh.access_token)}")
     response = api_client.post("/api/v1/accounts/services/", payload)
@@ -28,7 +43,7 @@ def test_create_service_error_no_merchant(api_client):
 def test_create_product_unauthorized(api_client):
     user = UserFactory()
     MerchantFactory(user=user)
-    payload = dict(name="productname")
+    payload = {}
     api_client.credentials(HTTP_AUTHORIZATION="Bearer ")
     response = api_client.post("/api/v1/accounts/services/", payload)
     assert response.status_code == 401
@@ -45,7 +60,7 @@ def test_list_product(api_client):
     assert response.status_code == 200
     for service in services:
         assert {"id": service.pk, "name": service.name} in [
-            {"id": item["id"], "name": item["name"]} for item in response.json()
+            {"id": item["id"], "name": item["name"]} for item in response.json()["results"]
         ]
 
 
@@ -102,8 +117,7 @@ def test_update_product_unauthorized(api_client):
     user = UserFactory()
     merchant = MerchantFactory(user=user)
     service = ServiceFactory(merchant=merchant)
-    new_product_name = "newservicename"
-    payload = dict(name=new_product_name)
+    payload = {}
     api_client.credentials(HTTP_AUTHORIZATION="Bearer ")
     response = api_client.patch(f"/api/v1/accounts/services/{service.pk}/", payload)
     assert response.status_code == 401
