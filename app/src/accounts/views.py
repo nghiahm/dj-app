@@ -14,15 +14,16 @@ from accounts.serializers import (
     ProductSerializer,
     ServiceSerializer,
     PromotionSerializer,
+    CategorySerializer,
 )
-from accounts.models import Merchant, Product, Service, Promotion
+from accounts.models import Merchant, Product, Service, Promotion, Category, Hashtag, Keyword
 from accounts.permissions import IsMerchantUser
 
 
 class CustomPagination(PageNumberPagination):
-    page_size = 2
+    page_size = 10
     page_size_query_param = "page_size"
-    max_page_size = 50
+    max_page_size = 100
     page_query_param = "p"
 
 
@@ -93,7 +94,7 @@ class ProductViewSet(ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        return Product.objects.filter(merchant__user=self.request.user)
+        return Product.objects.filter(merchant__user=self.request.user).order_by("pk")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -109,7 +110,7 @@ class ServiceViewSet(ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        return Service.objects.filter(merchant__user=self.request.user)
+        return Service.objects.filter(merchant__user=self.request.user).order_by("pk")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -125,12 +126,36 @@ class PromotionViewSet(ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        return Promotion.objects.filter(product__merchant__user=self.request.user) | Promotion.objects.filter(
-            service__merchant__user=self.request.user
-        )
+        return Promotion.objects.filter(product__merchant__user=self.request.user).order_by(
+            "pk"
+        ) | Promotion.objects.filter(service__merchant__user=self.request.user).order_by("pk")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
+
+
+class CategoryViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CategorySerializer
+    pagination_class = CustomPagination
+    queryset = Category.objects.all().order_by("pk")
+    lookup_field = "pk"
+
+
+class HashtagViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CategorySerializer
+    pagination_class = CustomPagination
+    queryset = Hashtag.objects.all().order_by("pk")
+    lookup_field = "pk"
+
+
+class KeywordViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CategorySerializer
+    pagination_class = CustomPagination
+    queryset = Keyword.objects.all().order_by("pk")
+    lookup_field = "pk"

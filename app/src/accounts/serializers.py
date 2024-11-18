@@ -91,23 +91,17 @@ class KeywordSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PromotionSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True, read_only=True)
-    hashtags = HashtagSerializer(many=True, read_only=True)
-    keywords = KeywordSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Promotion
-        fields = "__all__"
-
-    def validate(self, attrs):
-        if not attrs.get("product") and not attrs.get("service"):
-            raise ValidationError("A promotion must be associated with either a product or a service.")
-        return attrs
-
-
 class ProductSerializer(serializers.ModelSerializer):
     merchant = serializers.PrimaryKeyRelatedField(read_only=True)
+    category_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), many=True, required=False, write_only=True
+    )
+    hashtag_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Hashtag.objects.all(), many=True, required=False, write_only=True
+    )
+    keyword_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Keyword.objects.all(), many=True, required=False, write_only=True
+    )
     categories = CategorySerializer(many=True, read_only=True)
     hashtags = HashtagSerializer(many=True, read_only=True)
     keywords = KeywordSerializer(many=True, read_only=True)
@@ -119,12 +113,44 @@ class ProductSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context["request"]
         merchant = request.user.merchant
+
+        category_ids = validated_data.pop("category_ids", [])
+        hashtag_ids = validated_data.pop("hashtag_ids", [])
+        keyword_ids = validated_data.pop("keyword_ids", [])
+
         product = Product.objects.create(merchant=merchant, **validated_data)
+
+        product.categories.set(category_ids)
+        product.hashtags.set(hashtag_ids)
+        product.keywords.set(keyword_ids)
+
         return product
+
+    def update(self, instance, validated_data):
+        category_ids = validated_data.pop("category_ids", [])
+        hashtag_ids = validated_data.pop("hashtag_ids", [])
+        keyword_ids = validated_data.pop("keyword_ids", [])
+
+        instance = super().update(instance, validated_data)
+
+        instance.categories.set(category_ids)
+        instance.hashtags.set(hashtag_ids)
+        instance.keywords.set(keyword_ids)
+
+        return instance
 
 
 class ServiceSerializer(serializers.ModelSerializer):
     merchant = serializers.PrimaryKeyRelatedField(read_only=True)
+    category_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), many=True, required=False, write_only=True
+    )
+    hashtag_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Hashtag.objects.all(), many=True, required=False, write_only=True
+    )
+    keyword_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Keyword.objects.all(), many=True, required=False, write_only=True
+    )
     categories = CategorySerializer(many=True, read_only=True)
     hashtags = HashtagSerializer(many=True, read_only=True)
     keywords = KeywordSerializer(many=True, read_only=True)
@@ -136,8 +162,63 @@ class ServiceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context["request"]
         merchant = request.user.merchant
+
+        category_ids = validated_data.pop("category_ids", [])
+        hashtag_ids = validated_data.pop("hashtag_ids", [])
+        keyword_ids = validated_data.pop("keyword_ids", [])
+
         service = Service.objects.create(merchant=merchant, **validated_data)
+
+        service.categories.set(category_ids)
+        service.hashtags.set(hashtag_ids)
+        service.keywords.set(keyword_ids)
+
         return service
+
+    def update(self, instance, validated_data):
+        category_ids = validated_data.pop("category_ids", [])
+        hashtag_ids = validated_data.pop("hashtag_ids", [])
+        keyword_ids = validated_data.pop("keyword_ids", [])
+
+        instance = super().update(instance, validated_data)
+
+        instance.categories.set(category_ids)
+        instance.hashtags.set(hashtag_ids)
+        instance.keywords.set(keyword_ids)
+
+        return instance
+
+
+class PromotionSerializer(serializers.ModelSerializer):
+    product_id = serializers.PrimaryKeyRelatedField(
+        queryset=Product.objects.all(), source="product", write_only=True, required=False
+    )
+    service_id = serializers.PrimaryKeyRelatedField(
+        queryset=Service.objects.all(), source="service", write_only=True, required=False
+    )
+    product = ProductSerializer(read_only=True)
+    service = ServiceSerializer(read_only=True)
+    category_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), many=True, required=False, write_only=True
+    )
+    hashtag_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Hashtag.objects.all(), many=True, required=False, write_only=True
+    )
+    keyword_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Keyword.objects.all(), many=True, required=False, write_only=True
+    )
+    categories = CategorySerializer(many=True, read_only=True)
+    hashtags = HashtagSerializer(many=True, read_only=True)
+    keywords = KeywordSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Promotion
+        fields = "__all__"
+
+    def validate(self, attrs):
+        if not attrs.get("product") and not attrs.get("service"):
+            raise ValidationError("A promotion must has a product or a service.")
+        return attrs
 
 
 class MerchantSerializer(ModelSerializer):
