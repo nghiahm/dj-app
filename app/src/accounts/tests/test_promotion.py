@@ -111,6 +111,35 @@ def test_retrieve_promotion_unauthorized(api_client):
 
 
 @pytest.mark.django_db
+def test_update_promotion(api_client):
+    user = UserFactory()
+    merchant = MerchantFactory(user=user)
+    service = ServiceFactory(merchant=merchant)
+    promotion = PromotionFactory(service=service)
+    new_promotion_name = "newpromotionename"
+    payload = dict(name=new_promotion_name, service_id=service.pk)
+    refresh = RefreshToken.for_user(user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(refresh.access_token)}")
+    response = api_client.patch(f"/api/v1/accounts/promotions/{promotion.pk}/", payload)
+    promotion.refresh_from_db()
+    assert response.status_code == 200
+    assert response.data["name"] == new_promotion_name
+    assert promotion.name == new_promotion_name
+
+
+@pytest.mark.django_db
+def test_update_promotion_unauthorized(api_client):
+    user = UserFactory()
+    merchant = MerchantFactory(user=user)
+    service = ServiceFactory(merchant=merchant)
+    promotion = PromotionFactory(service=service)
+    payload = {}
+    api_client.credentials(HTTP_AUTHORIZATION="Bearer ")
+    response = api_client.patch(f"/api/v1/accounts/promotions/{promotion.pk}/", payload)
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
 def test_delete_promotion(api_client):
     user = UserFactory()
     merchant = MerchantFactory(user=user)
