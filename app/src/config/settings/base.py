@@ -156,6 +156,7 @@ AUTH_USER_MODEL = "accounts.User"
 # https://www.django-rest-framework.org/api-guide/permissions/#setting-the-permission-policy
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/getting_started.html#installation
 # https://drf-spectacular.readthedocs.io/en/latest/readme.html#installation
+# https://www.django-rest-framework.org/api-guide/pagination/
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
@@ -163,6 +164,8 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 2,
 }
 
 

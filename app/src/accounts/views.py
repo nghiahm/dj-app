@@ -4,6 +4,7 @@ from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView, Destr
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 from accounts.serializers import (
     UserCreateSerializer,
     LogoutSerializer,
@@ -16,6 +17,13 @@ from accounts.serializers import (
 )
 from accounts.models import Merchant, Product, Service, Promotion
 from accounts.permissions import IsMerchantUser
+
+
+class CustomPagination(PageNumberPagination):
+    page_size = 2
+    page_size_query_param = "page_size"
+    max_page_size = 50
+    page_query_param = "p"
 
 
 class UserCreateView(GenericAPIView):
@@ -82,6 +90,7 @@ class ProductViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated, IsMerchantUser)
     serializer_class = ProductSerializer
     lookup_field = "pk"
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return Product.objects.filter(merchant__user=self.request.user)
@@ -97,6 +106,7 @@ class ServiceViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated, IsMerchantUser)
     serializer_class = ServiceSerializer
     lookup_field = "pk"
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return Service.objects.filter(merchant__user=self.request.user)
@@ -112,6 +122,7 @@ class PromotionViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = PromotionSerializer
     lookup_field = "pk"
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return Promotion.objects.filter(product__merchant__user=self.request.user) | Promotion.objects.filter(
