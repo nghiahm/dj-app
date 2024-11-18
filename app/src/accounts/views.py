@@ -12,8 +12,9 @@ from accounts.serializers import (
     MerchantSerializer,
     ProductSerializer,
     ServiceSerializer,
+    PromotionSerializer,
 )
-from accounts.models import Merchant, Product, Service
+from accounts.models import Merchant, Product, Service, Promotion
 from accounts.permissions import IsMerchantUser
 
 
@@ -83,7 +84,7 @@ class ProductViewSet(ModelViewSet):
     lookup_field = "pk"
 
     def get_queryset(self):
-        return Product.objects.filter(merchant=self.request.user.merchant)
+        return Product.objects.filter(merchant__user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -98,7 +99,24 @@ class ServiceViewSet(ModelViewSet):
     lookup_field = "pk"
 
     def get_queryset(self):
-        return Service.objects.filter(merchant=self.request.user.merchant)
+        return Service.objects.filter(merchant__user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_201_CREATED)
+
+
+class PromotionViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PromotionSerializer
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        return Promotion.objects.filter(product__merchant__user=self.request.user) | Promotion.objects.filter(
+            service__merchant__user=self.request.user
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

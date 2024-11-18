@@ -7,7 +7,7 @@ from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from accounts.models import User, Merchant, Product, Service
+from accounts.models import User, Merchant, Product, Service, Promotion, Category, Hashtag, Keyword
 
 
 class UserCreateSerializer(ModelSerializer):
@@ -73,8 +73,72 @@ class UserSerializer(ModelSerializer):
         fields = ("id", "email", "first_name", "last_name", "is_active")
 
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = "__all__"
+
+
+class HashtagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hashtag
+        fields = "__all__"
+
+
+class KeywordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Keyword
+        fields = "__all__"
+
+
+class PromotionSerializer(serializers.ModelSerializer):
+    categories = CategorySerializer(many=True, read_only=True)
+    hashtags = HashtagSerializer(many=True, read_only=True)
+    keywords = KeywordSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Promotion
+        fields = "__all__"
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    merchant = serializers.PrimaryKeyRelatedField(read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+    hashtags = HashtagSerializer(many=True, read_only=True)
+    keywords = KeywordSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Product
+        fields = "__all__"
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        merchant = request.user.merchant
+        product = Product.objects.create(merchant=merchant, **validated_data)
+        return product
+
+
+class ServiceSerializer(serializers.ModelSerializer):
+    merchant = serializers.PrimaryKeyRelatedField(read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+    hashtags = HashtagSerializer(many=True, read_only=True)
+    keywords = KeywordSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Service
+        fields = "__all__"
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        merchant = request.user.merchant
+        service = Service.objects.create(merchant=merchant, **validated_data)
+        return service
+
+
 class MerchantSerializer(ModelSerializer):
     user = UserSerializer(read_only=True)
+    products = ProductSerializer(many=True, read_only=True)
+    services = ServiceSerializer(many=True, read_only=True)
 
     class Meta:
         model = Merchant
@@ -88,31 +152,3 @@ class MerchantSerializer(ModelSerializer):
         except IntegrityError:
             raise ValidationError("You can only create one merchant per user.")
         return merchant
-
-
-class ProductSerializer(ModelSerializer):
-    merchant = MerchantSerializer(read_only=True)
-
-    class Meta:
-        model = Product
-        fields = "__all__"
-
-    def create(self, validated_data):
-        request = self.context["request"]
-        merchant = request.user.merchant
-        product = Product.objects.create(merchant=merchant, **validated_data)
-        return product
-
-
-class ServiceSerializer(ModelSerializer):
-    merchant = MerchantSerializer(read_only=True)
-
-    class Meta:
-        model = Service
-        fields = "__all__"
-
-    def create(self, validated_data):
-        request = self.context["request"]
-        merchant = request.user.merchant
-        product = Service.objects.create(merchant=merchant, **validated_data)
-        return product

@@ -28,21 +28,83 @@ class Merchant(models.Model):
         return f"{self.user} - merchant"
 
 
-class Product(models.Model):
-    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE)
+class Category(models.Model):
     name = models.CharField(max_length=255, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.merchant} - product"
+        return self.name
+
+
+class Hashtag(models.Model):
+    name = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Keyword(models.Model):
+    name = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Product(models.Model):
+    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE, related_name="products")
+    name = models.CharField(max_length=255, blank=True)
+    categories = models.ManyToManyField(Category, related_name="products", blank=True)
+    hashtags = models.ManyToManyField(Hashtag, related_name="products", blank=True)
+    keywords = models.ManyToManyField(Keyword, related_name="products", blank=True)
+
+    def __str__(self):
+        return self.name
+
+    def get_categories(self):
+        return "\n".join([p.categories for p in self.categories.all()])
+
+    def get_hashtags(self):
+        return "\n".join([p.hashtags for p in self.hashtags.all()])
+
+    def get_keywords(self):
+        return "\n".join([p.keywords for p in self.keywords.all()])
 
 
 class Service(models.Model):
-    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE)
+    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE, related_name="services")
     name = models.CharField(max_length=255, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    categories = models.ManyToManyField(Category, related_name="services", blank=True)
+    hashtags = models.ManyToManyField(Hashtag, related_name="services", blank=True)
+    keywords = models.ManyToManyField(Keyword, related_name="services", blank=True)
 
     def __str__(self):
-        return f"{self.merchant} - service"
+        return self.name
+
+    def get_categories(self):
+        return "\n".join([p.categories for p in self.categories.all()])
+
+    def get_hashtags(self):
+        return "\n".join([p.hashtags for p in self.hashtags.all()])
+
+    def get_keywords(self):
+        return "\n".join([p.keywords for p in self.keywords.all()])
+
+
+class Promotion(models.Model):
+    product = models.ForeignKey(Product, related_name="promotions", on_delete=models.CASCADE, null=True, blank=True)
+    service = models.ForeignKey(Service, related_name="promotions", on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=255, blank=True)
+    categories = models.ManyToManyField(Category, related_name="promotions", blank=True)
+    hashtags = models.ManyToManyField(Hashtag, related_name="promotions", blank=True)
+    keywords = models.ManyToManyField(Keyword, related_name="promotions", blank=True)
+
+    def __str__(self):
+        return self.name
+
+    def get_categories(self):
+        return "\n".join([p.categories for p in self.categories.all()])
+
+    def get_hashtags(self):
+        return "\n".join([p.hashtags for p in self.hashtags.all()])
+
+    def get_keywords(self):
+        return "\n".join([p.keywords for p in self.keywords.all()])

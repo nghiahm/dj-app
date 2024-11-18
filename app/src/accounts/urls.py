@@ -9,12 +9,14 @@ from accounts.views import (
     MerchantViewSet,
     ProductViewSet,
     ServiceViewSet,
+    PromotionViewSet,
 )
 
 
 router = DefaultRouter()
 router.register("products", ProductViewSet, basename="products")
 router.register("services", ServiceViewSet, basename="services")
+router.register("promotions", PromotionViewSet, basename="promotions")
 
 urlpatterns = [
     path("signup/", UserCreateView.as_view(), name="signup"),
