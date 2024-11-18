@@ -90,8 +90,8 @@ class Service(models.Model):
 
 
 class Promotion(models.Model):
-    product = models.ForeignKey(Product, related_name="promotions", on_delete=models.CASCADE, null=True, blank=True)
-    service = models.ForeignKey(Service, related_name="promotions", on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="promotions", null=True, blank=True)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="promotions", null=True, blank=True)
     name = models.CharField(max_length=255, blank=True)
     categories = models.ManyToManyField(Category, related_name="promotions", blank=True)
     hashtags = models.ManyToManyField(Hashtag, related_name="promotions", blank=True)

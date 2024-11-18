@@ -1,5 +1,5 @@
 import factory
-from accounts.models import User, Merchant, Product, Service
+from accounts.models import User, Merchant, Product, Service, Promotion
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -48,3 +48,13 @@ class ServiceFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Service
+
+
+class PromotionFactory(factory.django.DjangoModelFactory):
+    product = factory.SubFactory(ProductFactory)
+    service = factory.SubFactory(ServiceFactory)
+    pk = factory.Sequence(lambda n: n)
+    name = factory.Faker("name")
+
+    class Meta:
+        model = Promotion

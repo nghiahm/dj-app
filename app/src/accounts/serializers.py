@@ -100,6 +100,11 @@ class PromotionSerializer(serializers.ModelSerializer):
         model = Promotion
         fields = "__all__"
 
+    def validate(self, attrs):
+        if not attrs.get("product") and not attrs.get("service"):
+            raise ValidationError("A promotion must be associated with either a product or a service.")
+        return attrs
+
 
 class ProductSerializer(serializers.ModelSerializer):
     merchant = serializers.PrimaryKeyRelatedField(read_only=True)
