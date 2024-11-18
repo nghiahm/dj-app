@@ -108,19 +108,63 @@ class PromotionSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     merchant = serializers.PrimaryKeyRelatedField(read_only=True)
-    categories = CategorySerializer(many=True, read_only=True)
-    hashtags = HashtagSerializer(many=True, read_only=True)
-    keywords = KeywordSerializer(many=True, read_only=True)
+    categories = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Category.objects.all(), write_only=True, required=False
+    )
+    hashtags = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Hashtag.objects.all(), write_only=True, required=False
+    )
+    keywords = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Keyword.objects.all(), write_only=True, required=False
+    )
+
+    category_details = CategorySerializer(many=True, read_only=True, source="categories")
+    hashtag_details = HashtagSerializer(many=True, read_only=True, source="hashtags")
+    keyword_details = KeywordSerializer(many=True, read_only=True, source="keywords")
 
     class Meta:
         model = Product
         fields = "__all__"
+        extra_fields = ("category_details", "hashtag_details", "keyword_details")
 
     def create(self, validated_data):
         request = self.context["request"]
         merchant = request.user.merchant
+
+        categories_data = validated_data.pop("categories", [])
+        hashtags_data = validated_data.pop("hashtags", [])
+        keywords_data = validated_data.pop("keywords", [])
+
         product = Product.objects.create(merchant=merchant, **validated_data)
+
+        if categories_data:
+            product.categories.set(categories_data)
+
+        if hashtags_data:
+            product.hashtags.set(hashtags_data)
+
+        if keywords_data:
+            product.hashtags.set(keywords_data)
+
         return product
+
+    def update(self, instance, validated_data):
+        categories_data = validated_data.pop("categories", [])
+        hashtags_data = validated_data.pop("hashtags", [])
+        keywords_data = validated_data.pop("keywords", [])
+
+        instance = super().update(instance, validated_data)
+
+        if categories_data:
+            instance.categories.set(categories_data)
+
+        if hashtags_data:
+            instance.hashtags.set(hashtags_data)
+
+        if keywords_data:
+            instance.hashtags.set(keywords_data)
+
+        return instance
 
 
 class ServiceSerializer(serializers.ModelSerializer):

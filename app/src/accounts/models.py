@@ -60,13 +60,13 @@ class Product(models.Model):
         return self.name
 
     def get_categories(self):
-        return "\n".join([p.categories for p in self.categories.all()])
+        return "\n".join([p.name for p in self.categories.all()])
 
     def get_hashtags(self):
-        return "\n".join([p.hashtags for p in self.hashtags.all()])
+        return "\n".join([p.name for p in self.hashtags.all()])
 
     def get_keywords(self):
-        return "\n".join([p.keywords for p in self.keywords.all()])
+        return "\n".join([p.name for p in self.keywords.all()])
 
 
 class Service(models.Model):
@@ -80,13 +80,13 @@ class Service(models.Model):
         return self.name
 
     def get_categories(self):
-        return "\n".join([p.categories for p in self.categories.all()])
+        return "\n".join([p.name for p in self.categories.all()])
 
     def get_hashtags(self):
-        return "\n".join([p.hashtags for p in self.hashtags.all()])
+        return "\n".join([p.name for p in self.hashtags.all()])
 
     def get_keywords(self):
-        return "\n".join([p.keywords for p in self.keywords.all()])
+        return "\n".join([p.name for p in self.keywords.all()])
 
 
 class Promotion(models.Model):
@@ -101,10 +101,10 @@ class Promotion(models.Model):
         return self.name
 
     def get_categories(self):
-        return "\n".join([p.categories for p in self.categories.all()])
+        return "\n".join([p.name for p in self.categories.all()])
 
     def get_hashtags(self):
-        return "\n".join([p.hashtags for p in self.hashtags.all()])
+        return "\n".join([p.name for p in self.hashtags.all()])
 
     def get_keywords(self):
-        return "\n".join([p.keywords for p in self.keywords.all()])
+        return "\n".join([p.name for p in self.keywords.all()])

@@ -10,6 +10,9 @@ from accounts.views import (
     ProductViewSet,
     ServiceViewSet,
     PromotionViewSet,
+    CategoryViewSet,
+    HashtagViewSet,
+    KeywordViewSet,
 )
 
 
@@ -17,6 +20,9 @@ router = DefaultRouter()
 router.register("products", ProductViewSet, basename="products")
 router.register("services", ServiceViewSet, basename="services")
 router.register("promotions", PromotionViewSet, basename="promotions")
+router.register("categories", CategoryViewSet, basename="categories")
+router.register("hashtags", HashtagViewSet, basename="hashtags")
+router.register("keywords", KeywordViewSet, basename="keywords")
 
 urlpatterns = [
     path("signup/", UserCreateView.as_view(), name="signup"),

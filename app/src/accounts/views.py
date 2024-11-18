@@ -13,8 +13,11 @@ from accounts.serializers import (
     ProductSerializer,
     ServiceSerializer,
     PromotionSerializer,
+    CategorySerializer,
+    HashtagSerializer,
+    KeywordSerializer,
 )
-from accounts.models import Merchant, Product, Service, Promotion
+from accounts.models import Merchant, Product, Service, Promotion, Category, Hashtag, Keyword
 from accounts.permissions import IsMerchantUser
 
 
@@ -123,3 +126,24 @@ class PromotionViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
+
+
+class CategoryViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+    lookup_field = "pk"
+
+
+class HashtagViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = HashtagSerializer
+    queryset = Hashtag.objects.all()
+    lookup_field = "pk"
+
+
+class KeywordViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = KeywordSerializer
+    queryset = Keyword.objects.all()
+    lookup_field = "pk"
