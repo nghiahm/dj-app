@@ -94,6 +94,8 @@ class ProductViewSet(ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Product.objects.none()
         return Product.objects.filter(merchant__user=self.request.user).order_by("pk")
 
     def create(self, request, *args, **kwargs):
@@ -110,6 +112,8 @@ class ServiceViewSet(ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Service.objects.none()
         return Service.objects.filter(merchant__user=self.request.user).order_by("pk")
 
     def create(self, request, *args, **kwargs):
@@ -126,6 +130,8 @@ class PromotionViewSet(ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Promotion.objects.none()
         return Promotion.objects.filter(product__merchant__user=self.request.user).order_by(
             "pk"
         ) | Promotion.objects.filter(service__merchant__user=self.request.user).order_by("pk")

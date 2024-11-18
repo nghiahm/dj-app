@@ -6,7 +6,7 @@ services:
     depends_on:
       - db
     env_file:
-      - ./app/src/.env.local
+      - ./app/src/.env
     volumes:
       - ./app/src:/app
       - static:/app/static
@@ -15,7 +15,7 @@ services:
       - 8000:8000
     networks:
       - main
-  
+
   db:
     container_name: db
     image: postgres:14.0-alpine
